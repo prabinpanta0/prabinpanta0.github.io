@@ -1,0 +1,370 @@
+:root{
+	--bg-0:#0b0b0f;
+	--bg-1:#121219;
+	--bg-2:#171722;
+	--fg-0:#e8e9ec; /* higher contrast */
+	--fg-1:#c9cad1;
+	--fg-dim:#9aa1ad;
+	--accent:#9ad7ff;
+	--accent-2:#7fd7ff;
+	--ok:#8ec07c;
+	--warn:#f7c84a;
+	--error:#ff6b5a;
+	--grid:#2b3240;
+	--shadow: 0 20px 60px rgba(0,0,0,.6);
+	--holo-glow:#7fd7ff; /* dynamic per-section base */
+	--holo-glow-soft: rgba(127,215,255,0.45);
+	--holo-glow-weak: rgba(127,215,255,0.2);
+	--holo-glow-strong: rgba(127,215,255,0.8);
+	/* Safe area */
+	--safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;}
+html{font-family:"IBM Plex Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;}
+body{
+	margin:0; background:radial-gradient(1200px 800px at 70% -20%, #1b1f2a, transparent), var(--bg-0);
+	color:var(--fg-0);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeSpeed;
+	font-synthesis: none;
+	overflow: hidden; /* prevent page scroll */
+}
+
+/* Skip link */
+.skip-link{ position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden }
+.skip-link:focus{ position:fixed; left:16px; top:16px; width:auto; height:auto; padding:8px 12px; background:#000; color:#fff; border-radius:6px; z-index:9999 }
+
+
+/* Hologram layout */
+.holo-app {
+	min-height:100dvh;
+	display:flex;
+	flex-direction:column;
+	justify-content:flex-end;
+	align-items:center;
+	background:radial-gradient(1200px 800px at 70% -20%, #1b1f2a, transparent), var(--bg-0);
+	padding:0;
+	position:relative;
+}
+.holo-app::before{ /* aurora/nebula glow */
+	content:""; position:fixed; inset:-20vh; pointer-events:none; z-index:0;
+	background:
+		radial-gradient(40% 50% at 20% 10%, color-mix(in srgb, var(--holo-glow) 40%, transparent) 0%, transparent 70%),
+		radial-gradient(30% 40% at 80% 0%, color-mix(in srgb, var(--accent) 35%, transparent) 0%, transparent 70%),
+		radial-gradient(30% 30% at 0% 80%, color-mix(in srgb, var(--ok) 20%, transparent) 0%, transparent 70%);
+	filter: blur(60px) saturate(110%);
+	opacity:.28;
+	animation: auroraDrift 60s linear infinite;
+}
+.holo-app::after{ /* subtle starfield */
+	content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+	background:
+		radial-gradient(#ffffff18 1px, transparent 1.5px) 0 0 / 4px 4px,
+		radial-gradient(#ffffff0f 1px, transparent 1.5px) 2px 2px / 6px 6px;
+	opacity:.12;
+	animation: starDrift 120s linear infinite;
+}
+.holo-stage {
+	position:relative;
+	width:100vw;
+	min-height:100dvh;
+	display:flex;
+	flex-direction:column;
+	align-items:center;
+	justify-content:flex-end;
+	pointer-events:none;
+	perspective: 1200px;
+	will-change: transform;
+}
+/* header brand removed */
+.holo-screen {
+	position:absolute;
+	left:50%;
+	transform-style: preserve-3d;
+	transform:translateX(-50%) translateY(-40vh) rotateX(18deg) rotateZ(0deg);
+	z-index:2;
+	width:min(90vw, 700px);
+	box-shadow:0 0 32px 8px var(--holo-glow-weak), 0 0 0 2px #3a3a44;
+	background:linear-gradient(180deg, #23232a 80%, #1b1b22 100%);
+	border:1.5px solid var(--holo-glow-soft);
+	border-radius:18px 18px 32px 32px/18px 18px 40px 40px;
+	pointer-events:auto;
+	opacity:0; filter:blur(6px);
+	will-change: transform, opacity, filter;
+	/* Make this a query container (both inline + block) so children can size using cqw & cqh */
+	container-type: size;
+}
+.holo-beam {
+	position:absolute;
+	left:50%;
+	bottom:128px;
+	width:84px;
+	height:calc(50vh - 40px);
+	transform:translateX(-50%);
+	z-index:1;
+	background:
+		repeating-linear-gradient(180deg, color-mix(in srgb, var(--holo-glow) 20%, transparent) 0 2px, transparent 2px 8px),
+		linear-gradient(180deg, var(--holo-glow-soft) 0%, transparent 80%);
+	filter:blur(2px);
+	opacity:0;
+	pointer-events:none;
+	clip-path: polygon(38% 0%, 62% 0%, 100% 100%, 0% 100%);
+	border-radius: 4px;
+	animation: beamShimmer 6s linear infinite;
+}
+.holo-beam::before{ /* hot core */
+	content:""; position:absolute; left:50%; top:0; transform:translateX(-50%);
+	width:32px; height:100%; border-radius:20px;
+	background: linear-gradient(180deg, #fff 0%, color-mix(in srgb, var(--holo-glow) 60%, #fff) 12%, color-mix(in srgb, var(--holo-glow) 40%, transparent) 70%, transparent 100%);
+	filter: blur(6px); opacity:.28;
+}
+.holo-beam::after{ /* tiny spark specks */
+	content:""; position:absolute; inset:0; pointer-events:none;
+	background:
+		radial-gradient(circle at 50% 80%, #fff 0 1px, transparent 2px),
+		radial-gradient(circle at 40% 60%, #fff 0 1px, transparent 2px),
+		radial-gradient(circle at 60% 40%, #fff 0 1px, transparent 2px);
+	opacity:.25; filter: blur(0.5px);
+	animation: sparkRise 2.2s linear infinite;
+}
+
+.holo-base{
+	position:absolute; left:50%; bottom:80px; transform:translateX(-50%);
+	width:220px; height:30px; border-radius:30px/18px; z-index:0;
+	background: radial-gradient(60% 100% at 50% 50%, var(--holo-glow-soft), transparent 70%);
+	box-shadow: 0 0 40px var(--holo-glow-soft), 0 0 10px var(--holo-glow-weak) inset;
+	opacity:0;
+}
+.holo-base::before{ /* inner ring */
+	content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+	background: radial-gradient(60% 100% at 50% 50%, var(--holo-glow-strong), transparent 60%);
+	filter: blur(10px); opacity:.08; animation: basePulse 3.4s ease-in-out infinite;
+}
+.holo-projector {
+	position:relative;
+	display:flex;
+	flex-direction:column;
+	align-items:center;
+	justify-content:flex-end;
+	z-index:3;
+	margin-bottom: calc(40px + var(--safe-bottom));
+	pointer-events:auto;
+}
+/* ground grid removed */
+
+
+.screen-wrap, .holo-screen {
+	/* Inherit from .holo-screen above */
+	padding:20px 20px 28px 20px;
+	height:50vh;
+	max-width:700px;
+	box-shadow:0 0 32px 8px #7fd7ff33, 0 0 0 2px #3a3a44;
+}
+.ascii-screen{
+	margin:0;
+	/* Preserve newlines and sequences, but allow wrapping to use vertical space */
+	white-space:pre-wrap;
+	overflow-wrap:anywhere;
+	word-break:break-word;
+	overflow-x:auto; overflow-y:auto;
+	/* Fallback font sizing based on viewport */
+	font-size:clamp(16px, 2.8vw, 26px);
+	line-height:1.35;
+	max-height:100%;
+	background:
+		repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 2px),
+		radial-gradient(600px 200px at 0% 0%, rgba(255,255,255,0.04), transparent);
+	padding:12px; border-radius:8px; outline:none; border:1px solid #32323a;
+	color:#f0f4f7;
+	text-shadow:0 0 2px rgba(255,255,255,.25);
+	will-change: transform, opacity, filter;
+	font-variant-ligatures: none;
+	-webkit-font-smoothing: antialiased;
+	tab-size: 4;
+}
+.scanlines{ position:absolute; inset:12px; border-radius:8px; pointer-events:none; mix-blend-mode:screen; background: repeating-linear-gradient(0deg, rgba(127,215,255,.05) 0 1px, transparent 1px 3px) }
+.noise-overlay{ position:absolute; inset:12px; border-radius:8px; pointer-events:none; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.05"/></svg>'); background-size: 120px 120px; opacity:.5 }
+.screen-hint{ position:absolute; right:18px; bottom:12px; font-size:12px; color:var(--fg-dim); opacity:.85 }
+
+/* ANSI-like styling inside ASCII screen */
+.ascii-screen a.ansi-link{ color: #8ec8ff; text-decoration: underline; text-underline-offset: 2px; }
+.ascii-screen a.ansi-link:hover{ color:#bfe2ff }
+.ascii-screen .ansi-bullet{ color: #9ad7ff }
+.ascii-screen .ansi-section{ color:#7fe1c8; font-weight:600 }
+.ascii-screen .ansi-key{ color:#f7c84a }
+.ascii-screen .ansi-tech{ color:#8ec07c }
+
+.control-wrap{
+	display:grid;
+	place-items:center;
+	gap:8px;
+}
+
+.platform{ display:flex; flex-direction:column; align-items:center; gap:0; }
+
+
+/* Messy cards deck on the ground */
+/* deck and cards removed */
+.card::after{
+	content:""; position:absolute; inset:2px; border-radius:8px; pointer-events:none;
+	box-shadow: inset 0 0 0 1px #7fd7ff33, inset 0 0 12px #7fd7ff11, 0 0 6px #000;
+}
+.card:focus-visible{ outline:2px dashed #7fd7ff; outline-offset:4px }
+.card:hover{ box-shadow:0 16px 36px #000a, inset 0 0 36px #7fd7ff33, 0 0 12px #7fd7ff22 }
+
+/* Random-ish layout via nth-child variables */
+.card:nth-child(1){ --rot:-12deg; --dy:20px; --dx:-180px }
+.card:nth-child(2){ --rot:8deg; --dy:-14px; --dx:-20px }
+.card:nth-child(3){ --rot:18deg; --dy:28px; --dx:160px }
+.card:nth-child(4){ --rot:-4deg; --dy:-24px; --dx:270px }
+
+
+.legend{ display:flex; gap:12px; align-items:center; color:var(--fg-1); font-size:12px; opacity:.9; margin-top:10px; }
+.legend-hint{ color:var(--fg-dim) }
+
+
+.dots{ display:flex; gap:10px; margin-top:12px; filter: drop-shadow(0 0 8px var(--holo-glow-soft)); }
+.dot{ width:12px; height:12px; border-radius:50%; background:linear-gradient(180deg, #e9f7ff, #bfe7ff); box-shadow:0 0 10px #7fd7ffaa, inset 0 0 0 1px #9ad7ff; opacity:.85 }
+.dot[aria-current="true"], .dot.active{ background:linear-gradient(180deg, #ffffff, #c9f1ff); box-shadow:0 0 14px color-mix(in srgb, var(--holo-glow) 90%, #fff), inset 0 0 0 1px #c9f1ff; opacity:1 }
+
+/* Responsiveness */
+
+@media (min-width: 900px){
+	.holo-screen{ width:min(86vw, 900px); height:56vh; transform:translateX(-50%) translateY(-36vh) rotateX(18deg) }
+	/* Slightly reduce scaling at this breakpoint to avoid overflow with bigger monospace fonts */
+	.ascii-screen{ max-height:100%; font-size:clamp(16px, 1.05vw, 21px) }
+	.deck{ height:240px }
+}
+
+/* Extra-large screens: give the screen more width/height so long ASCII lines don't feel cramped */
+@media (min-width: 1200px){
+	.holo-screen{ width:min(92vw, 1100px); height:62vh }
+}
+@media (min-width: 1600px){
+	.holo-screen{ width:min(90vw, 1280px); height:66vh }
+	.ascii-screen{ font-size:clamp(17px, 0.9vw, 21px) }
+}
+
+/* Tablets: tune geometry and typography for medium viewports */
+@media (max-width: 900px){
+	.holo-screen{
+		width:min(92vw, 820px);
+		height:58svh;
+		transform:translateX(-50%) translateY(-36svh) rotateX(14deg);
+	}
+	.ascii-screen{
+		font-size: clamp(16px, min(2.4cqw, 3.4cqh), 24px);
+		line-height: 1.38;
+	}
+	.holo-beam{ opacity:.55; height:calc(42vh - 40px) }
+	.noise-overlay{ opacity:.4 }
+	.scanlines{ opacity:.9 }
+	.dots{ gap:12px }
+	.dot{ width:14px; height:14px }
+}
+
+/* Phones: maximize readability and usable area */
+@media (max-width: 600px){
+	.holo-screen{
+		width:min(96vw, 520px);
+		height:70svh;
+		transform:translateX(-50%) translateY(-28svh) rotateX(0deg);
+		border-radius:16px 16px 28px 28px/16px 16px 32px 32px;
+	}
+	.screen-wrap, .holo-screen{ padding:14px 14px 20px 14px }
+	.ascii-screen{
+		font-size: clamp(16px, min(3.2cqw, 4.6cqh), 24px);
+		line-height: 1.42;
+		padding:10px;
+		overscroll-behavior: contain;
+	}
+	/* Flat mode: hide beam and platform */
+	.holo-beam, .holo-base{ display:none !important }
+	.holo-base{ bottom: calc(72px + var(--safe-bottom)); width:200px; height:26px }
+	.dots{ gap:14px }
+	.dot{ width:16px; height:16px }
+	.screen-hint{ font-size:13px; right:14px; bottom:10px }
+}
+
+/* Section nav buttons for small screens */
+.nav-buttons{ display:none; gap:10px; margin-top:10px }
+.nav-buttons .nav-btn{
+	appearance:none; border:none; border-radius:10px; padding:10px 14px; cursor:pointer;
+	background: linear-gradient(180deg, #2a2f3a, #1b1f28);
+	color:#e8f3ff; box-shadow: 0 0 0 1px #3a4452, 0 8px 20px #000a;
+	font-family: inherit; font-size:14px; letter-spacing:0.02em;
+	transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.nav-buttons .nav-btn:hover{ transform: translateY(-1px); box-shadow: 0 0 0 1px #56708a, 0 10px 24px #000c }
+.nav-buttons .nav-btn:active{ transform: translateY(0) scale(0.98) }
+
+@media (max-width: 900px){
+	.nav-buttons{ display:flex }
+}
+
+/* Very small or landscape-constrained heights */
+@media (max-height: 480px){
+	.holo-screen{ height:52svh; transform:translateX(-50%) translateY(-30svh) rotateX(10deg) }
+	.ascii-screen{ font-size: clamp(15px, min(2.6cqw, 3.6cqh), 22px) }
+	.holo-beam{ height:calc(30vh - 28px); opacity:.4 }
+}
+
+/* Prevent rubber-band scroll from affecting page; keep interactions inside screen */
+body{ overscroll-behavior: contain }
+
+/* If the browser supports container query units, size the ASCII text to the screen width for consistent fit */
+@supports (font-size: 1cqw){
+	.ascii-screen{
+	/* Scale by both width and height of the hologram; take the smaller to avoid overflow */
+	font-size: clamp(16px, min(2.6cqw, 3.8cqh), 26px);
+	}
+}
+
+	/* Reveal animations */
+	@keyframes baseGlow { from { opacity:0 } to { opacity:1 } }
+	@keyframes beamRise { from { opacity:0; height:0 } to { opacity:.7; height:calc(50vh - 40px) } }
+	@keyframes screenIn { from { opacity:0; filter:blur(6px) } to { opacity:1; filter:blur(0) } }
+
+	.holo-reveal .holo-base{ animation: baseGlow .6s ease-out forwards }
+	.holo-reveal .holo-beam{ animation: beamRise .8s ease-out .2s forwards }
+	.holo-reveal .holo-screen{ animation: screenIn .6s ease-out .6s forwards }
+
+	/* Crossfade between contents */
+	.ascii-screen{ position:relative }
+	.ascii-screen.fade-out{ opacity:0; transition:opacity .25s ease-out }
+	.ascii-screen.fade-in{ opacity:1; transition:opacity .25s ease-in }
+
+	/* Selected card animation (rise and glow) */
+	/* selected card animation removed */
+
+/* Corner indicator (shows only the corner like a 3D cue) */
+.corner-indicator{
+	font-size:36px; color:#7fd7ff; text-shadow:0 0 8px #7fd7ff99, 0 0 16px #7fd7ff44; transform-origin:center; transition:transform .2s linear; margin-bottom:8px;
+}
+
+/* Scroll spacer to enable page scroll controlling the hologram */
+/* scroll-track removed (no page scroll) */
+
+/* Fancy subtle scanline animation */
+@keyframes scan { 0% { background-position: 0 0, 0 0 } 100% { background-position: 0 0, 0 12px } }
+.ascii-screen{ animation: scan 12s linear infinite }
+.noise-overlay{ animation: noiseShift 1.8s steps(10) infinite }
+@keyframes noiseShift { 0%{ background-position:0 0 } 100%{ background-position:80px 80px } }
+
+/* Accessibility prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce){
+	.ascii-screen{ animation:none }
+	.knob{ transition:none }
+	.noise-overlay{ animation:none }
+}
+
+/* Background + beam animations */
+@keyframes starDrift { 0% { background-position: 0 0, 0 0 } 100% { background-position: 240px -360px, -180px 300px } }
+@keyframes auroraDrift { 0% { transform: translate3d(0,0,0) rotate(0deg) } 100% { transform: translate3d(-2%, 1%, 0) rotate(360deg) } }
+@keyframes beamShimmer { 0% { background-position: 0 0, 0 0 } 100% { background-position: 0 -160px, 0 0 } }
+@keyframes sparkRise { 0% { transform: translateY(0); opacity:.28 } 80% { opacity:.2 } 100% { transform: translateY(-40px); opacity:0 } }
+@keyframes basePulse { 0%, 100% { opacity:.06 } 50% { opacity:.12 } }
+
